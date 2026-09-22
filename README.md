@@ -1,57 +1,160 @@
+# Patreon Downloader
 
-# PatreonDownloader
-⚠ Current state of the project: critical fixes only ⚠
+用于下载 Patreon 创作者发布的帖子文件、图片和附件，支持保存正文、嵌入内容元数据以及 API 响应。
 
-Due to various circumstances I do not have ability to spend time on this project at present time. Therefore only critical fixes will be implemented. PRs and issues will be reviewed when the time allows it.
+本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立，使用独立的 Git 提交历史，并保留原项目的许可证和版权声明。
 
-This application is designed for downloading content posted by creators on patreon.com. 
+> 当前版本处于开发阶段，尚未通过编译和实际下载验证。单个帖子下载及视频下载修复仍需完善，请先阅读下方「当前限制」。本 README 已改为中文；程序参数和日志尚未中文化。
 
-IMPORTANT: You need a valid patreon account to download both free and paid content. Paid content will only be downloaded if you have an active subscription to creator's page.
+## 功能
 
-## Usage
-#### Download all available files from creator
-PatreonDownloader.App.exe --url #page url#. Page url should follow one of the following patterns:
-* https://www.patreon.com/m/#numbers#/posts
-* https://www.patreon.com/user?u=#numbers#
-* https://www.patreon.com/user/posts?u=#numbers#
-* https://www.patreon.com/#creator_name#/posts
-#### Download all available files from creator into custom directory and save all possible data (post contents, embed metadata, cover and avatar, json responses)
-PatreonDownloader.App.exe --url #page url# --download-directory c:\downloads --descriptions --embeds --campaign-images --json
-#### Show available commands and their descriptions
-PatreonDownloader.App.exe --help
+- 按创作者页面抓取帖子中的文件、图片和附件。
+- 可选保存帖子正文 JSON、嵌入内容元数据和 API 响应。
+- 可选下载创作者头像、封面。
+- 支持自定义下载目录、按帖子创建子目录和文件命名规则。
+- 支持代理和远程浏览器配置。
+- 媒体下载失败后最多尝试 3 次，前两次失败分别等待 2 秒和 4 秒。
+- 单个 post URL 下载正在开发中。
 
-## System requirements
-Due to Cloudflare protection triggering on all connections with TLS version lower than 1.3 the application will only work on the following systems:
-* Windows 10 1903 and newer
-* Linux and other systems with OpenSSL 1.1.1 and newer
+下载需要有效的 Patreon 账号；付费内容需要账号拥有相应访问权限。
 
-## Build instructions
-See docs\BUILDING.md
+## 当前限制
 
-## Supported features
-* Tested under Windows and Linux. Should work on any platform supported by .NET Core and Chromium browser.
-* Downloading files from posts
-* Downloading files from attachments
-* Saving html contents of posts
-* Saving metadata of embedded content
-* Saving api responses (mostly for troubleshooting purposes)
-* External links extraction from post
-	* C# plugin support (see below)
-	* Limited/dumb direct link support (PatreonDownloader will attempt to download any file with valid extension if no suitable plugin is installed)
-	* Dropbox support
-	* Blacklist (configured in settings.json)
-* Plugins (via C#)
-	* Custom downloaders for adding download support for websites which need custom download logic
-	* PatreonDownloader comes with the following plugins by default: Google Drive, Mega.nz
-	
-## Needs further testing
-* Gallery posts
+- **单个帖子下载尚不可用**：当前解析方法引用了作用域之外的目标信息变量，需要修正才能编译；抓取逻辑还需要改为直接请求指定帖子，避免只搜索创作者第一页。
+- **视频修复尚未完成**：目前只增加了重试，尚未验证视频地址解析、流式传输、重定向和大文件处理。重试不等于断点续传。
+- 当前仓库的依赖子模块需要修复和补齐；仅存在 `.gitmodules` 配置不代表依赖源码已经包含在仓库中。
+- 正文外链提取因 Patreon 正文格式变更已在代码中停用。
+- YouTube 和 imgur 链接目前会被跳过；Vimeo 视频、音频和图库仍需验证。
+- 尚未完成本地编译、自动化测试及登录后的真实下载验证。
 
-## Known not implemented or not tested features 
-* Audio files
-* Vimeo embedded videos
-* YouTube external links
-* imgur external links
+## 开发环境
 
-## License
-All files in this repository are licensed under the license listed in LICENSE.md file unless stated otherwise.
+项目目标框架为 `net9.0`，构建需要 .NET 9 SDK。程序的浏览器登录流程还依赖 Chromium 相关组件；可参考[远程浏览器说明](docs/REMOTEBROWSER.md)。
+
+先检查 SDK：
+
+```powershell
+dotnet --list-sdks
+```
+
+如果提示 `No .NET SDKs were found`，需要先安装 SDK；仅安装运行时不能编译项目。
+
+克隆仓库：
+
+```powershell
+git clone https://github.com/LazyFaiz/patreon-download.git
+cd patreon-download
+```
+
+本项目依赖 `submodules/UniversalDownloaderPlatform`。在修复依赖记录并补齐源码后，再执行以下构建命令。关于原项目构建流程，可参考[构建说明（英文）](docs/BUILDING.md)。
+
+```powershell
+dotnet restore PatreonDownloader.sln
+dotnet build PatreonDownloader.sln -c Release
+dotnet test PatreonDownloader.sln -c Release
+```
+
+> 上述命令用于后续验证；当前代码和依赖问题解决前，不保证构建成功。
+
+## 使用示例
+
+以下示例适用于完成构建后的程序。在程序输出目录打开 PowerShell 执行；Linux 可使用 `dotnet PatreonDownloader.App.dll` 替换可执行文件名。
+
+### 查看帮助
+
+```powershell
+.\PatreonDownloader.App.exe --help
+```
+
+### 下载创作者页面
+
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts"
+```
+
+原项目支持的页面格式包括：
+
+- `https://www.patreon.com/m/123456/posts`
+- `https://www.patreon.com/user?u=123456`
+- `https://www.patreon.com/user/posts?u=123456`
+- `https://www.patreon.com/creator_name/posts`
+
+请将示例中的用户名和数字替换为实际页面信息。
+
+### 指定目录并保存附加信息
+
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts" --download-directory "D:\PatreonDownloads" --descriptions --embeds --campaign-images --json
+```
+
+### 为每个帖子创建子目录
+
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts" --use-sub-directories --sub-directory-pattern "[%PostId%] %PublishedAt% %PostTitle%"
+```
+
+### 单个帖子下载（开发中）
+
+计划沿用 `--url` 参数接收帖子链接，例如：
+
+```text
+https://www.patreon.com/posts/example-title-12345678
+```
+
+当前版本尚未完成该流程，请勿将其视为已可用功能。
+
+## 常用参数
+
+| 参数 | 说明 |
+| --- | --- |
+| `--url` | 必填，创作者页面 URL；单帖 URL 支持正在完善 |
+| `--download-directory` | 指定下载目录 |
+| `--descriptions` | 保存帖子正文 JSON |
+| `--embeds` | 保存嵌入内容元数据，不代表下载嵌入视频 |
+| `--campaign-images` | 下载创作者头像和封面 |
+| `--json` | 保存 API 响应，方便排查问题 |
+| `--use-sub-directories` | 为每个帖子创建子目录 |
+| `--sub-directory-pattern` | 子目录命名模板 |
+| `--max-sub-directory-name-length` | 子目录名称长度限制，默认 100 |
+| `--max-filename-length` | 文件名长度限制，默认 100 |
+| `--file-exists-action` | 已有文件处理策略，见下表 |
+| `--disable-remote-file-size-check` | 禁用远程文件大小预检查 |
+| `--log-level` | 日志级别：`Default`、`Debug` 或 `Trace` |
+| `--log-save` | 将日志写入 `logs` 目录 |
+| `--proxy-server-address` | 代理地址，例如 `http://127.0.0.1:7890` |
+| `--remote-browser-address` | 启用远程调试的浏览器地址，详见专门文档 |
+
+已有文件处理策略：
+
+| 值 | 行为 |
+| --- | --- |
+| `BackupIfDifferent` | 默认策略；内容不同时保留旧文件备份 |
+| `ReplaceIfDifferent` | 内容不同时替换旧文件 |
+| `AlwaysReplace` | 始终替换 |
+| `KeepExisting` | 保留已有文件 |
+
+## 问题排查
+
+下载失败时，可启用调试日志：
+
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts" --log-level Debug --log-save
+```
+
+- **无法访问帖子**：确认账号已登录，并且能够在浏览器中查看目标内容。
+- **403 Forbidden**：检查登录状态、网络以及代理设置；账号能够查看页面不代表下载请求一定成功。
+- **视频下载失败**：记录帖子类型及错误日志；当前重试机制无法解决不支持的媒体格式或失效地址。
+- **找不到引用项目**：检查 `submodules/UniversalDownloaderPlatform` 是否包含完整依赖源码。
+
+提交问题时请提供运行命令、系统信息和相关错误片段，并删除 Cookie、令牌及其他凭据。
+
+## 其他文档
+
+- [构建说明（英文）](docs/BUILDING.md)
+- [远程浏览器配置（英文）](docs/REMOTEBROWSER.md)
+- [Google Drive 插件说明（英文）](docs/GOOGLEDRIVE.md)
+- [Mega 插件说明（英文）](docs/MEGA.md)
+
+## 许可证
+
+除另有说明外，本仓库文件遵循 [MIT 许可证](LICENSE.md)。依赖项目遵循各自许可证。
