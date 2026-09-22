@@ -1,5 +1,7 @@
 # Patreon Downloader
 
+[English](README.en.md) | 中文
+
 用于下载 Patreon 创作者发布的帖子文件、图片和附件，支持保存正文、嵌入内容元数据以及 API 响应。
 
 本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立。

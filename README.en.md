@@ -1,5 +1,7 @@
 # Patreon Downloader
 
+[中文](README.md) | English
+
 A command-line tool for downloading posts, files, images, and attachments from Patreon creator pages.
 
 This repository is based on [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader). Chinese documentation is available in [README.md](README.md).
