@@ -28,7 +28,7 @@ namespace PatreonDownloader.Implementation
             long campaignId = await GetCampaignId(url);
 
             var info = await GetCrawlTargetInfo(campaignId);
-            var postMatch = Regex.Match(url, @"/posts/(?:[^/]+-)?(\\d+)", RegexOptions.IgnoreCase);
+            var postMatch = Regex.Match(url, @"/posts/(?:[^/]+-)?(\d+)", RegexOptions.IgnoreCase);
             if (postMatch.Success) info.TargetPostId = postMatch.Groups[1].Value;
             return info;
         }
