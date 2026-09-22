@@ -11,7 +11,7 @@ namespace PatreonDownloader.App
     internal class UpdateChecker
     {
         private readonly HttpClient _httpClient;
-        private const string UpdateUrl = "https://alexcsdev.github.io/pd_version.txt";
+        private const string UpdateUrl = "https://raw.githubusercontent.com/LazyFaiz/patreon-download/main/pd_version.txt";
         public UpdateChecker()
         {
             _httpClient = new HttpClient();
