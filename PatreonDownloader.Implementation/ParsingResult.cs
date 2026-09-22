@@ -9,5 +9,6 @@ namespace PatreonDownloader.Implementation
     {
         public List<PatreonCrawledUrl> CrawledUrls { get; set; }
         public string NextPage { get; set; }
+        public bool TargetPostFound { get; set; }
     }
 }

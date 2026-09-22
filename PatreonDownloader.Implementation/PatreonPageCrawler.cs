@@ -85,12 +85,12 @@ namespace PatreonDownloader.Implementation
                     await File.WriteAllTextAsync(Path.Combine(_patreonDownloaderSettings.DownloadDirectory, $"page_{page}.json"),
                         json);
 
-                ParsingResult result = await ParsePage(json);
+                ParsingResult result = await ParsePage(json, patreonCrawlTargetInfo.TargetPostId);
 
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
 
-                nextPage = patreonCrawlTargetInfo.TargetPostId != null ? null : result.NextPage;
+                nextPage = result.TargetPostFound ? null : result.NextPage;
 
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
             }
@@ -100,20 +100,27 @@ namespace PatreonDownloader.Implementation
             return crawledUrls;
         }
 
-        private async Task<ParsingResult> ParsePage(string json)
+        private async Task<ParsingResult> ParsePage(string json, string targetPostId = null)
         {
             List<PatreonCrawledUrl> crawledUrls = new List<PatreonCrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
+            bool targetPostFound = false;
 
             Root jsonRoot = JsonConvert.DeserializeObject<Root>(json);
 
             _logger.Debug("Parsing data entries...");
             foreach (var jsonEntry in jsonRoot.Data)
             {
+                if (targetPostId != null && jsonEntry.Id != targetPostId)
+                {
+                    skippedIncludesList.AddRange(jsonEntry.Relationships.AttachmentsMedia?.Data.Select(x => x.Id) ?? Enumerable.Empty<string>());
+                    skippedIncludesList.AddRange(jsonEntry.Relationships.Images?.Data.Select(x => x.Id) ?? Enumerable.Empty<string>());
+                    continue;
+                }
+
+                targetPostFound = targetPostId != null;
                 OnPostCrawlStart(new PostCrawlEventArgs(jsonEntry.Id, true));
                 _logger.Info($"-> {jsonEntry.Id}");
-                if (patreonCrawlTargetInfo.TargetPostId != null && jsonEntry.Id != patreonCrawlTargetInfo.TargetPostId)
-                    continue;
 
                 if (jsonEntry.Type != "post")
                 {
@@ -401,7 +408,12 @@ namespace PatreonDownloader.Implementation
                 OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, true));
             }
 
-            return new ParsingResult {CrawledUrls = crawledUrls, NextPage = jsonRoot.Links?.Next};
+            return new ParsingResult
+            {
+                CrawledUrls = crawledUrls,
+                NextPage = jsonRoot.Links?.Next,
+                TargetPostFound = targetPostFound
+            };
         }
 
         private void OnPostCrawlStart(PostCrawlEventArgs e)
