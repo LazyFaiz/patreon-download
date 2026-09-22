@@ -1,4 +1,3 @@
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J6K3Q7G)
 
 # PatreonDownloader
 ⚠ Current state of the project: critical fixes only ⚠
