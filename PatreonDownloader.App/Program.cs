@@ -32,25 +32,6 @@ namespace PatreonDownloader.App
 
             NLogManager.ReconfigureNLog();
 
-            try
-            {
-                UpdateChecker updateChecker = new UpdateChecker();
-                (bool isUpdateAvailable, string updateMessage) = await updateChecker.IsNewVersionAvailable();
-                if (isUpdateAvailable)
-                {
-                    _logger.Warn("New version is available at https://github.com/AlexCSDev/PatreonDownloader/releases");
-                    if (updateMessage != null && !updateMessage.StartsWith("!"))
-                        _logger.Warn($"Note from developer: {updateMessage}");
-                }
-
-                if (updateMessage != null && updateMessage.StartsWith("!"))
-                    _logger.Warn($"Note from developer: {updateMessage.Substring(1)}");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Error encountered while checking for updates: {ex}", ex);
-            }
-
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             Console.CancelKeyPress += ConsoleOnCancelKeyPress;
 
@@ -64,7 +45,10 @@ namespace PatreonDownloader.App
             });
 
             if (commandLineOptions == null)
+            {
+                Environment.ExitCode = 2;
                 return;
+            }
 
             try
             {
@@ -73,7 +57,8 @@ namespace PatreonDownloader.App
             catch (Exception ex)
             {
                 _logger.Fatal($"Fatal error, application will be closed: {ex}");
-                Environment.Exit(0);
+                Environment.ExitCode = 1;
+                return;
             }
         }
 
@@ -112,7 +97,7 @@ namespace PatreonDownloader.App
             if (string.IsNullOrWhiteSpace(commandLineOptions.Url))
             {
                 _logger.Fatal("Creator url should be provided");
-                Environment.Exit(0);
+                Environment.ExitCode = 2;
                 return;
             }
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using UniversalDownloaderPlatform.Common.Interfaces;
+using UniversalDownloaderPlatform.Common.Exceptions;
 using UniversalDownloaderPlatform.DefaultImplementations;
 using UniversalDownloaderPlatform.DefaultImplementations.Interfaces;
 
@@ -80,7 +81,7 @@ namespace PatreonDownloader.Implementation
                     await Task.Delay(TimeSpan.FromSeconds(attempt * 2));
                 }
             }
-            throw last;
+            throw new DownloadException($"Unable to download media after 5 attempts: {url}", last);
         }
 
         public override async Task<string> DownloadString(string url, string refererUrl = null)
