@@ -9,6 +9,7 @@ using PatreonDownloader.Implementation.Enums;
 using PatreonDownloader.Implementation.Models;
 using PatreonDownloader.Implementation.Models.JSONObjects.Posts;
 using UniversalDownloaderPlatform.Common.Enums;
+using UniversalDownloaderPlatform.Common.Exceptions;
 using UniversalDownloaderPlatform.Common.Events;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -75,6 +76,8 @@ namespace PatreonDownloader.Implementation
             string nextPage = CrawlStartUrl + $"&filter[campaign_id]={patreonCrawlTargetInfo.Id}";
 
             int page = 0;
+            bool targetPostFound = false;
+            bool targetPostAccessible = false;
             while (!string.IsNullOrEmpty(nextPage))
             {
                 page++;
@@ -90,9 +93,20 @@ namespace PatreonDownloader.Implementation
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
 
-                nextPage = result.TargetPostFound ? null : result.NextPage;
+                targetPostFound |= result.TargetPostFound;
+                targetPostAccessible |= result.TargetPostAccessible;
+
+                nextPage = targetPostFound ? null : result.NextPage;
 
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
+            }
+
+            if (patreonCrawlTargetInfo.TargetPostId != null)
+            {
+                if (!targetPostFound)
+                    throw new UniversalDownloaderException($"Post {patreonCrawlTargetInfo.TargetPostId} was not found in the creator's posts.");
+                if (!targetPostAccessible)
+                    throw new UniversalDownloaderException($"Post {patreonCrawlTargetInfo.TargetPostId} was found, but the current account cannot access it.");
             }
 
             _logger.Debug("Finished crawl");
@@ -105,6 +119,7 @@ namespace PatreonDownloader.Implementation
             List<PatreonCrawledUrl> crawledUrls = new List<PatreonCrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
             bool targetPostFound = false;
+            bool targetPostAccessible = false;
 
             Root jsonRoot = JsonConvert.DeserializeObject<Root>(json);
 
@@ -147,6 +162,8 @@ namespace PatreonDownloader.Implementation
                     OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Warning, "Current user cannot view this post", jsonEntry.Id));
                     continue;
                 }
+
+                targetPostAccessible = targetPostId != null;
 
                 PatreonCrawledUrl entry = new PatreonCrawledUrl
                 {
@@ -412,7 +429,8 @@ namespace PatreonDownloader.Implementation
             {
                 CrawledUrls = crawledUrls,
                 NextPage = jsonRoot.Links?.Next,
-                TargetPostFound = targetPostFound
+                TargetPostFound = targetPostFound,
+                TargetPostAccessible = targetPostAccessible
             };
         }
 
