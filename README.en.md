@@ -6,7 +6,7 @@ A command-line tool for downloading posts, files, images, and attachments from P
 
 This repository is based on [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader). Chinese documentation is available in [README.md](README.md).
 
-> The project is under active development. Verify build and download behavior with your own account before production use.
+> The project is under active development. The code builds successfully; end-to-end downloads with a real Patreon account and video CDN still require local verification.
 
 ## Features
 
@@ -14,8 +14,8 @@ This repository is based on [AlexCSDev/PatreonDownloader](https://github.com/Ale
 - Save post descriptions, embed metadata, and API responses.
 - Download campaign avatar and cover images.
 - Configure download directories, post subdirectories, file naming, proxy, and logging.
-- Retry failed media downloads up to three times.
-- Single-post URL support is being finalized.
+- Stream media to disk, follow redirects, resume with HTTP Range, validate response length, and retry failed downloads up to five times.
+- Download a single post by its post URL.
 
 Downloading requires a valid Patreon account and access to the requested content. Paid posts require valid access permission.
 
@@ -89,9 +89,9 @@ https://www.patreon.com/posts/example-title-12345678
 
 ## Current limitations
 
-- Single-post crawling and video downloads still require validation against real authenticated posts.
+- Single-post crawling and video downloads are implemented, but still require validation against real authenticated posts.
 - YouTube and imgur links are skipped; Vimeo, audio, and gallery posts require further testing.
-- The application does not bypass Patreon access controls.
+- The application does not bypass Patreon access controls. Three legacy path assertions in the current test suite still need to be updated; the solution itself builds successfully.
 
 ## Documentation
 

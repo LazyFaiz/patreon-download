@@ -6,7 +6,7 @@
 
 本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立。
 
-> 当前版本处于开发阶段，尚未通过编译和实际下载验证。单个帖子下载及视频下载修复仍需完善，请先阅读下方「当前限制」。本 README 已改为中文；程序参数和日志尚未中文化。
+> 当前版本处于开发阶段。代码已经可以编译；真实 Patreon 账号和视频 CDN 的端到端下载仍需在本地验证。本 README 已改为中文；程序参数和日志尚未中文化。
 
 ## 功能
 
@@ -16,18 +16,18 @@
 - 支持自定义下载目录、按帖子创建子目录和文件命名规则。
 - 支持代理和远程浏览器配置。
 - 媒体下载失败后最多尝试 3 次，前两次失败分别等待 2 秒和 4 秒。
-- 单个 post URL 下载正在开发中。
+- 支持按单个 post URL 下载目标帖子。
 
 下载需要有效的 Patreon 账号；付费内容需要账号拥有相应访问权限。
 
 ## 当前限制
 
-- **单个帖子下载尚不可用**：当前解析方法引用了作用域之外的目标信息变量，需要修正才能编译；抓取逻辑还需要改为直接请求指定帖子，避免只搜索创作者第一页。
-- **视频修复尚未完成**：目前只增加了重试，尚未验证视频地址解析、流式传输、重定向和大文件处理。重试不等于断点续传。
+- 单个帖子下载已实现：程序会遍历创作者 API 分页，只处理 URL 中指定的 post ID；需要使用有权限的账号进行实际验证。
+- 视频下载已加入流式写入、重定向、临时文件保留、HTTP Range 续传、完整性检查和最多 5 次重试。
 - 项目依赖 `UniversalDownloaderPlatform` 子模块。首次克隆后请执行 `git submodule update --init --recursive`。
 - 正文外链提取因 Patreon 正文格式变更已在代码中停用。
 - YouTube 和 imgur 链接目前会被跳过；Vimeo 视频、音频和图库仍需验证。
-- 尚未完成本地编译、自动化测试及登录后的真实下载验证。
+- 已完成本地编译；当前测试仍有 3 个旧的下载路径断言失败，真实登录后的下载验证尚未完成。
 
 ## 开发环境
 
@@ -48,7 +48,7 @@ git clone https://github.com/LazyFaiz/patreon-download.git
 cd patreon-download
 ```
 
-本项目依赖 `submodules/UniversalDownloaderPlatform`。在修复依赖记录并补齐源码后，再执行以下构建命令。关于原项目构建流程，可参考[构建说明（英文）](docs/BUILDING.md)。
+本项目依赖 `submodules/UniversalDownloaderPlatform`。首次克隆后请执行 `git submodule update --init --recursive`，再执行以下构建命令。关于原项目构建流程，可参考[构建说明（英文）](docs/BUILDING.md)。
 
 ```powershell
 dotnet restore PatreonDownloader.sln
@@ -95,7 +95,7 @@ dotnet test PatreonDownloader.sln -c Release
 .\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts" --use-sub-directories --sub-directory-pattern "[%PostId%] %PublishedAt% %PostTitle%"
 ```
 
-### 单个帖子下载（开发中）
+### 单个帖子下载
 
 计划沿用 `--url` 参数接收帖子链接，例如：
 
@@ -103,7 +103,7 @@ dotnet test PatreonDownloader.sln -c Release
 https://www.patreon.com/posts/example-title-12345678
 ```
 
-当前版本尚未完成该流程，请勿将其视为已可用功能。
+程序会从创作者 API 分页中定位该 post，并只下载目标帖子的内容。
 
 ## 常用参数
 
@@ -145,7 +145,7 @@ https://www.patreon.com/posts/example-title-12345678
 
 - **无法访问帖子**：确认账号已登录，并且能够在浏览器中查看目标内容。
 - **403 Forbidden**：检查登录状态、网络以及代理设置；账号能够查看页面不代表下载请求一定成功。
-- **视频下载失败**：记录帖子类型及错误日志；当前重试机制无法解决不支持的媒体格式或失效地址。
+- **视频下载失败**：程序会保留 `.dwnldtmp` 临时文件，并在重试时尝试 Range 续传；如果 CDN 不支持续传，会自动重新开始。失效地址、无权限内容或未支持的媒体格式仍无法下载。
 - **找不到引用项目**：检查 `submodules/UniversalDownloaderPlatform` 是否包含完整依赖源码。
 
 提交问题时请提供运行命令、系统信息和相关错误片段，并删除 Cookie、令牌及其他凭据。
