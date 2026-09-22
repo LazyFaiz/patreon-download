@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,7 +90,7 @@ namespace PatreonDownloader.Implementation
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
 
-                nextPage = result.NextPage;
+                nextPage = patreonCrawlTargetInfo.TargetPostId != null ? null : result.NextPage;
 
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
             }
@@ -112,6 +112,9 @@ namespace PatreonDownloader.Implementation
             {
                 OnPostCrawlStart(new PostCrawlEventArgs(jsonEntry.Id, true));
                 _logger.Info($"-> {jsonEntry.Id}");
+                if (patreonCrawlTargetInfo.TargetPostId != null && jsonEntry.Id != patreonCrawlTargetInfo.TargetPostId)
+                    continue;
+
                 if (jsonEntry.Type != "post")
                 {
                     string msg = $"Invalid type for \"data\": {jsonEntry.Type}, skipping";

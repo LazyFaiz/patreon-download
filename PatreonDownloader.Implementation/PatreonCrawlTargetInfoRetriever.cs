@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.AccessControl;
@@ -27,7 +27,10 @@ namespace PatreonDownloader.Implementation
         {
             long campaignId = await GetCampaignId(url);
 
-            return await GetCrawlTargetInfo(campaignId);
+            var info = await GetCrawlTargetInfo(campaignId);
+            var postMatch = Regex.Match(url, @"/posts/(?:[^/]+-)?(\\d+)", RegexOptions.IgnoreCase);
+            if (postMatch.Success) info.TargetPostId = postMatch.Groups[1].Value;
+            return info;
         }
 
         private async Task<long> GetCampaignId(string url)
@@ -62,7 +65,7 @@ namespace PatreonDownloader.Implementation
             }
         }
 
-        private async Task<ICrawlTargetInfo> GetCrawlTargetInfo(long campaignId)
+        private async Task<PatreonCrawlTargetInfo> GetCrawlTargetInfo(long campaignId)
         {
             try
             {

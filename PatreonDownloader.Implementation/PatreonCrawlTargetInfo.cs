@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 
@@ -14,6 +14,7 @@ namespace PatreonDownloader.Implementation
         }
 
         public long Id { get; set; }
+        public string TargetPostId { get; set; }
         public string AvatarUrl { get; set; }
         public string CoverUrl { get; set; }
 
