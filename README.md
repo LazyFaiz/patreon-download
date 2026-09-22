@@ -2,7 +2,7 @@
 
 用于下载 Patreon 创作者发布的帖子文件、图片和附件，支持保存正文、嵌入内容元数据以及 API 响应。
 
-本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立，使用独立的 Git 提交历史，并保留原项目的许可证和版权声明。
+本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立。
 
 > 当前版本处于开发阶段，尚未通过编译和实际下载验证。单个帖子下载及视频下载修复仍需完善，请先阅读下方「当前限制」。本 README 已改为中文；程序参数和日志尚未中文化。
 
