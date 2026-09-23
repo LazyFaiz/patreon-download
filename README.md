@@ -6,7 +6,7 @@
 
 本项目基于 [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader) 建立。
 
-> 当前版本处于开发阶段。代码已经可以编译；真实 Patreon 账号和视频 CDN 的端到端下载仍需在本地验证。本 README 已改为中文；程序参数和日志尚未中文化。
+> 当前版本处于开发阶段。代码已可编译，单帖图片下载已使用真实 Patreon 账号验证；视频 CDN 下载仍需验证。程序参数和日志尚未中文化。
 
 ## 功能
 
@@ -22,12 +22,12 @@
 
 ## 当前限制
 
-- 单个帖子下载已实现：程序会遍历创作者 API 分页，只处理 URL 中指定的 post ID；需要使用有权限的账号进行实际验证。
+- 单个帖子下载已实现：程序会遍历创作者 API 分页，只处理 URL 中指定的 post ID。已对一个有权限的图片帖子完成实际下载验证。
 - 视频下载已加入流式写入、重定向、临时文件保留、HTTP Range 续传、完整性检查和最多 5 次重试。
 - 项目依赖 `UniversalDownloaderPlatform` 子模块。首次克隆后请执行 `git submodule update --init --recursive`。
 - 正文外链提取因 Patreon 正文格式变更已在代码中停用。
 - YouTube 和 imgur 链接目前会被跳过；Vimeo 视频、音频和图库仍需验证。
-- 已完成本地编译；当前测试仍有 3 个旧的下载路径断言失败，真实登录后的下载验证尚未完成。
+- 已完成本地编译；当前测试仍有 3 个旧的下载路径断言失败。真实登录后的单帖图片下载已验证，其他帖子类型仍需测试。
 
 ## 开发环境
 
@@ -97,19 +97,21 @@ dotnet test PatreonDownloader.sln -c Release
 
 ### 单个帖子下载
 
-计划沿用 `--url` 参数接收帖子链接，例如：
+使用 `--url` 参数传入帖子链接，并用 `--download-directory` 指定保存目录，例如：
 
-```text
-https://www.patreon.com/posts/example-title-12345678
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/duckie_cos/posts/yanfei-set-free-159054835" --download-directory "F:\Desktop\1"
 ```
 
-程序会从创作者 API 分页中定位该 post，并只下载目标帖子的内容。
+程序会从创作者 API 分页中定位该 post，并只下载目标帖子的内容。首次运行会打开浏览器要求登录 Patreon；登录后如果程序仍在等待，可结束程序并重新运行相同命令，浏览器会话会保存在程序输出目录的 `chromedata` 中。
+
+2026-09-23 实测：上述帖子下载完成 26 张 JPEG 图片，共 54,466,552 字节。文件均非空，文件名均以 `159054835_` 开头；其中 1 张帖子封面图片与附件图片重复。此结果只验证了该账号有权访问的图片帖子。
 
 ## 常用参数
 
 | 参数 | 说明 |
 | --- | --- |
-| `--url` | 必填，创作者页面 URL；单帖 URL 支持正在完善 |
+| `--url` | 必填，创作者页面或单帖 URL |
 | `--download-directory` | 指定下载目录 |
 | `--descriptions` | 保存帖子正文 JSON |
 | `--embeds` | 保存嵌入内容元数据，不代表下载嵌入视频 |

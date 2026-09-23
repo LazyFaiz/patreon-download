@@ -6,7 +6,7 @@ A command-line tool for downloading posts, files, images, and attachments from P
 
 This repository is based on [AlexCSDev/PatreonDownloader](https://github.com/AlexCSDev/PatreonDownloader). Chinese documentation is available in [README.md](README.md).
 
-> The project is under active development. The code builds successfully; end-to-end downloads with a real Patreon account and video CDN still require local verification.
+> The project is under active development. The code builds successfully, and a single image post has been downloaded with a real Patreon account. Video CDN downloads still require verification.
 
 ## Features
 
@@ -66,11 +66,15 @@ Download to a custom directory and save metadata:
 .\PatreonDownloader.App.exe --url "https://www.patreon.com/creator_name/posts" --download-directory "D:\PatreonDownloads" --descriptions --embeds --campaign-images --json
 ```
 
-The planned single-post form is:
+Pass a post URL to `--url` and choose an output directory with `--download-directory`:
 
-```text
-https://www.patreon.com/posts/example-title-12345678
+```powershell
+.\PatreonDownloader.App.exe --url "https://www.patreon.com/duckie_cos/posts/yanfei-set-free-159054835" --download-directory "F:\Desktop\1"
 ```
+
+The application searches the creator's paginated API results and downloads only the requested post. On first run, it opens a browser for Patreon login. If it continues waiting after login, stop and rerun the same command; the browser session is stored in `chromedata` in the application output directory.
+
+Verified on 2026-09-23: the example post produced 26 nonempty JPEG files totaling 54,466,552 bytes, all named with the `159054835_` prefix. One post image duplicates an attachment image. This verifies an image post accessible to the test account; other post types still need testing.
 
 ## Common options
 
@@ -89,7 +93,7 @@ https://www.patreon.com/posts/example-title-12345678
 
 ## Current limitations
 
-- Single-post crawling and video downloads are implemented, but still require validation against real authenticated posts.
+- Single-post image downloading has been validated with an authenticated account. Video downloads and other post types still require real-world validation.
 - YouTube and imgur links are skipped; Vimeo, audio, and gallery posts require further testing.
 - The application does not bypass Patreon access controls. Three legacy path assertions in the current test suite still need to be updated; the solution itself builds successfully.
 
