@@ -27,7 +27,7 @@
 - 项目依赖 `UniversalDownloaderPlatform` 子模块。首次克隆后请执行 `git submodule update --init --recursive`。
 - 正文外链提取因 Patreon 正文格式变更已在代码中停用。
 - YouTube 和 imgur 链接目前会被跳过；Vimeo 视频、音频和图库仍需验证。
-- 已完成本地编译；当前测试仍有 3 个旧的下载路径断言失败。真实登录后的单帖图片下载已验证，其他帖子类型仍需测试。
+- 本地构建与真实登录后的单帖图片下载已验证。文件名测试中，超长 PNG 文件名及扩展名保留测试通过；同名文件测试发现第二个同名文件未追加区分后缀；超长 URL 作为文件名的测试暂缓执行。其他帖子类型仍需测试。
 
 ## 开发环境
 
@@ -56,7 +56,7 @@ dotnet build PatreonDownloader.sln -c Release
 dotnet test PatreonDownloader.sln -c Release
 ```
 
-> 上述命令用于后续验证；当前代码和依赖问题解决前，不保证构建成功。
+> 当前构建可以成功。测试套件仍包含一项同名文件失败测试和一项暂缓执行的超长 URL 文件名测试；运行 `dotnet test` 时会报告失败。
 
 ## 使用示例
 

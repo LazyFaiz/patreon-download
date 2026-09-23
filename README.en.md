@@ -46,6 +46,8 @@ dotnet build PatreonDownloader.sln -c Release
 dotnet test PatreonDownloader.sln -c Release
 ```
 
+The solution builds successfully. The test suite currently reports one failure in duplicate file naming and skips the URL-derived long filename case. The long PNG filename and extension test passes.
+
 ## Usage
 
 Show help:
@@ -95,7 +97,7 @@ Verified on 2026-09-23: the example post produced 26 nonempty JPEG files totalin
 
 - Single-post image downloading has been validated with an authenticated account. Video downloads and other post types still require real-world validation.
 - YouTube and imgur links are skipped; Vimeo, audio, and gallery posts require further testing.
-- The application does not bypass Patreon access controls. Three legacy path assertions in the current test suite still need to be updated; the solution itself builds successfully.
+- The application does not bypass Patreon access controls. Duplicate file naming still needs a fix: the second file with the same name does not receive a distinguishing suffix. The URL-derived long filename test is deferred.
 
 ## Documentation
 
